@@ -54,3 +54,8 @@ In the /desktop directory and in another terminal
 ```bash
 npm run start
 ```
+
+### 4. Use the Electron App
+
+1. Upload a pdf of a payslip using the choose a file button
+2. Then click the upload the file button and wait for it to extract the keywords! 
