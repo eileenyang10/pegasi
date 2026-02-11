@@ -18,7 +18,7 @@ cd pegasi
 pip install -r requirements.txt
 ```
 
-2. Run backend server
+2. Run backend server, make sure you are in the /server folder
 ```bash
 uvicorn main:app --reload
 ```
@@ -28,7 +28,7 @@ ollama serve
 ollama pull qwen3-vl:4b
 ```
 
-Test in the terminal (in the /apps directory) using this curl command 
+Test in the terminal (in the /apps directory) using this curl command in the /apps directory
 
 ```bash
 curl -X POST http://localhost:8000/extract_keywords \

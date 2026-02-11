@@ -33,17 +33,11 @@ async def extract_keyword(file: UploadFile):
             json={"model": "qwen3-vl:4b", 
                 "prompt": prompt,
                 "images": images_b64,
-                "stream": False},
+                "stream": False,
+                "format": "json"},
         )
-        timeout=300
-        print(response)
-        response.raise_for_status()
-
-        lines = response.text.strip().splitlines()
-        outer = json.loads(lines[-1])
-        inner = json.loads(outer["response"])
-
-        return inner
+        
+        return response.json().get('thinking')
 
   except requests.RequestException as e:
       raise HTTPException(status_code=500, detail=f"Error communicating with Ollama: {str(e)}")
