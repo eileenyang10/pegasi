@@ -1,36 +1,45 @@
 import React, { useState } from 'react';
 
+type Status =  'idle' | 'uploading' | 'extracting' | 'done' | 'fail';
+
 const FileUploader = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [status, setStatus] = useState<Status>('idle');
+  const [keywords, setKeywords] = useState<String>();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
+      setStatus('idle');
       setFile(e.target.files[0]);
     }
   };
 
   const handleUpload = async () => {
     if (file) {
-      console.log('Uploading file...');
+      setStatus('extracting');
 
       const formData = new FormData();
       formData.append('file', file);
 
       try {
-        // You can write the URL of your server or any other endpoint used for file upload
-        const result = await fetch('http://localhost:11434/api/generate', {
-          method: 'POST',
-          body: JSON.stringify({
-            model: "qwen3-vl-4b",
-            prompt: "You are a keyword extractor. Extract 8–15 keywords from this document that would help a human quickly index or search it. Prefer specific nouns and noun phrases. Avoid generic words. Return ONLY valid JSON in the exact schema: { \"keywords\": [ { \"term\": string, \"score\": number } ] } where score is 0–1 confidence. No extra text.",
-          })
+        const res = await fetch("http://localhost:8000/extract_keywords", {
+          method: "POST",
+          body: formData,
         });
 
-        const data = await result.json();
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Backend error:", text);
+          setStatus('fail');
+          return;
+        }
 
-        console.log(data);
-      } catch (error) {
-        console.error(error);
+        const data = await res.text();
+        setKeywords(data);
+        setStatus('done');
+      } catch (err) {
+        console.error("Network / JS error:", err);
+        setStatus('fail');
       }
     }
   };
@@ -40,7 +49,7 @@ const FileUploader = () => {
       <div className="input-group">
         <input id="file" type="file" onChange={handleFileChange} />
       </div>
-      {file && (
+      {/* {file && (
         <section>
           File details:
           <ul>
@@ -49,7 +58,7 @@ const FileUploader = () => {
             <li>Size: {file.size} bytes</li>
           </ul>
         </section>
-      )}
+      )} */}
 
       {file && (
         <button 
@@ -57,8 +66,28 @@ const FileUploader = () => {
           className="submit"
         >Upload a file</button>
       )}
+      <Result status={status} />
+      {keywords && (
+        <div>
+          {JSON.stringify(keywords)}
+        </div>
+      )}
     </>
   );
+};
+
+const Result = ({ status }: { status: string }) => {
+  if (status === 'done') {
+    return <p>✅ File uploaded successfully!</p>;
+  } else if (status === 'fail') {
+    return <p>❌ File upload failed!</p>;
+  } else if (status === 'uploading') {
+    return <p>⏳ Uploading selected file...</p>;
+  } else if (status === 'extracting') {
+    return <p>⏳ Extracting selected file...</p>;
+  } else {
+    return null;
+  }
 };
 
 export default FileUploader;
