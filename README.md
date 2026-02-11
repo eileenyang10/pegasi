@@ -7,8 +7,8 @@ The goal is for the Electron desktop app to be able to extract keywords from a P
 ### 1. Clone the repository
 
 ```bash
-git clone <repo-url>
-cd <repo-folder>
+git clone https://github.com/eileenyang10/pegasi.git
+cd pegasi
 ```
 
 ### 2. Set Up Backend
