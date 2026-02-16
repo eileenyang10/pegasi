@@ -1,18 +1,31 @@
 from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from pdf2image import convert_from_bytes 
 import requests
-import json
 
 import base64
 import io
 from PIL import Image
 
+# Ollama requests can only receive images in base64
 def image_to_base64(img: Image.Image) -> str:
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/extract_keywords")
 async def extract_keyword(file: UploadFile):
