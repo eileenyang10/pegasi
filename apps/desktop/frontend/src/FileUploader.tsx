@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 type Status =  'idle' | 'uploading' | 'extracting' | 'done' | 'fail';
+
+type Keyword = {
+  term: string,
+  score: number
+}
 
 const FileUploader = () => {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>('idle');
-  const [keywords, setKeywords] = useState<String>();
+  const [keywords, setKeywords] = useState<Keyword[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -17,6 +22,7 @@ const FileUploader = () => {
   const handleUpload = async () => {
     if (file) {
       setStatus('extracting');
+      console.log('extracting file')
 
       const formData = new FormData();
       formData.append('file', file);
@@ -26,16 +32,12 @@ const FileUploader = () => {
           method: "POST",
           body: formData,
         });
-
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("Backend error:", text);
-          setStatus('fail');
-          return;
-        }
-
-        const data = await res.text();
-        setKeywords(data);
+        
+        console.log(res);
+        const data = await res.json();
+        const obj = JSON.parse(data);
+        console.log(obj.keywords);
+        setKeywords(obj.keywords);
         setStatus('done');
       } catch (err) {
         console.error("Network / JS error:", err);
@@ -44,47 +46,47 @@ const FileUploader = () => {
     }
   };
 
+  const keywordsList = keywords?.map((k,i) => {
+
+    const confidence = Math.round(k.score * 100);
+    return <li key={i}> {k.term} ({confidence}%) </li>
+  })
+
   return (
     <>
       <div className="input-group">
         <input id="file" type="file" onChange={handleFileChange} />
       </div>
-      {/* {file && (
+      {file && (
         <section>
-          File details:
+          File Uploaded:
           <ul>
             <li>Name: {file.name}</li>
             <li>Type: {file.type}</li>
             <li>Size: {file.size} bytes</li>
           </ul>
         </section>
-      )} */}
+      )}
 
       {file && (
         <button 
           onClick={handleUpload}
           className="submit"
-        >Upload a file</button>
+        >Extract Keywords</button>
       )}
       <Result status={status} />
-      {keywords && (
-        <div>
-          {JSON.stringify(keywords)}
-        </div>
-      )}
+      {keywords && keywordsList && (<ul> {keywordsList} </ul>)}
     </>
   );
 };
 
 const Result = ({ status }: { status: string }) => {
   if (status === 'done') {
-    return <p>✅ File uploaded successfully!</p>;
+    return <p>✅ Keywords Extracted !</p>;
   } else if (status === 'fail') {
     return <p>❌ File upload failed!</p>;
-  } else if (status === 'uploading') {
-    return <p>⏳ Uploading selected file...</p>;
   } else if (status === 'extracting') {
-    return <p>⏳ Extracting selected file...</p>;
+    return <p>⏳ Extracting words...</p>;
   } else {
     return null;
   }

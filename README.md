@@ -49,6 +49,11 @@ In the /frontend directory
 npm run dev
 ```
 
+You may need to ensure you are on the correct version of node
+```bash
+nvm use 22
+```
+
 3. Launch electron
 In the /desktop directory and in another terminal
 ```bash
