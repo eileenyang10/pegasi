@@ -34,6 +34,7 @@ async def extract_keyword(file: UploadFile):
 
   pdf_bytes = await file.read()
 
+    # hardcap on 1 page in order to process faster, and not hang
   image = convert_from_bytes (
       pdf_bytes, first_page=1, last_page=1,fmt='png'
   )

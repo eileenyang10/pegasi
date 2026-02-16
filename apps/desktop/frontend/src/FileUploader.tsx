@@ -16,6 +16,7 @@ const FileUploader = () => {
     if (e.target.files) {
       setStatus('idle');
       setFile(e.target.files[0]);
+      setKeywords([]);
     }
   };
 
