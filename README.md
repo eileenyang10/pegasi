@@ -64,3 +64,9 @@ npm run start
 
 1. Upload a pdf of a payslip using the choose a file button
 2. Then click the upload the file button and wait for it to extract the keywords! 
+
+## ToDos:
+
+1. Restrict File Upload Size
+2. Prettier Frontend
+3. Bigger Drag and Drop Component for File
