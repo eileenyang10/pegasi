@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-type Status =  'idle' | 'uploading' | 'extracting' | 'done' | 'fail';
+type Status =  'idle' | 'extracting' | 'done' | 'fail';
 
 type Keyword = {
   term: string,
@@ -23,6 +23,7 @@ const FileUploader = () => {
   const handleUpload = async () => {
     if (file) {
       setStatus('extracting');
+      setKeywords([]);
       console.log('extracting file')
 
       const formData = new FormData();
@@ -33,6 +34,10 @@ const FileUploader = () => {
           method: "POST",
           body: formData,
         });
+
+        if (!res.ok) {
+          throw new Error(`Server error: ${res.status}`);
+        }
         
         console.log(res);
         const data = await res.json();
@@ -56,7 +61,7 @@ const FileUploader = () => {
   return (
     <>
       <div className="input-group">
-        <input id="file" type="file" onChange={handleFileChange} />
+        <input id="file" accept="application/pdf" type="file" onChange={handleFileChange} />
       </div>
       {file && (
         <section>
@@ -73,6 +78,7 @@ const FileUploader = () => {
         <button 
           onClick={handleUpload}
           className="submit"
+          disabled={status === 'extracting'}
         >Extract Keywords</button>
       )}
       <Result status={status} />

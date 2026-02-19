@@ -30,18 +30,24 @@ app.add_middleware(
 @app.post("/extract_keywords")
 async def extract_keyword(file: UploadFile):
 
-  prompt = "You are a keyword extractor. Extract 8–15 keywords from this document that would help a human quickly index or search it. Prefer specific nouns and noun phrases. Avoid generic words. Return ONLY valid JSON in the exact schema: { \"keywords\": [ { \"term\": string, \"score\": number } ] } where score is 0–1 confidence. No extra text."
+    prompt = "You are a keyword extractor. Extract 8–15 keywords from this document that would help a human quickly index or search it. Prefer specific nouns and noun phrases. Avoid generic words. Return ONLY valid JSON in the exact schema: { \"keywords\": [ { \"term\": string, \"score\": number } ] } where score is 0–1 confidence. No extra text."
 
-  pdf_bytes = await file.read()
+    if (file.content_type != "application/pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF Files are supported")
 
-    # hardcap on 1 page in order to process faster, and not hang
-  image = convert_from_bytes (
-      pdf_bytes, first_page=1, last_page=1,fmt='png'
-  )
+    pdf_bytes = await file.read()
 
-  images_b64 = [image_to_base64(img) for img in image]
-  
-  try:
+    try:
+        # hardcap on 1 page in order to process faster, and not hang
+        image = convert_from_bytes (
+        pdf_bytes, first_page=1, last_page=1,fmt='png'
+        )
+
+        images_b64 = [image_to_base64(img) for img in image]
+    except Exception:
+        raise HTTPException(status_code=400, detail="Failed to process PDF")
+
+    try:
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={"model": "qwen3-vl:4b", 
@@ -50,8 +56,8 @@ async def extract_keyword(file: UploadFile):
                 "stream": False,
                 "format": "json"},
         )
-        
+
         return response.json().get('thinking')
 
-  except requests.RequestException as e:
-      raise HTTPException(status_code=500, detail=f"Error communicating with Ollama: {str(e)}")
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error communicating with Ollama: {str(e)}")
