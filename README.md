@@ -67,6 +67,6 @@ npm run start
 
 ## ToDos:
 
-1. Restrict File Upload Size
-2. Prettier Frontend
-3. Bigger Drag and Drop Component for File
+1. Robust JSON parsing (especially for more than 1 page)
+2. Bigger Drag and Drop Component for File
+3. Cache results by File

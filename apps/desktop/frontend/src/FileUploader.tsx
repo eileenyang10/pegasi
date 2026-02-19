@@ -41,6 +41,7 @@ const FileUploader = () => {
         
         console.log(res);
         const data = await res.json();
+        console.log(data);
         const obj = JSON.parse(data);
         console.log(obj.keywords);
         setKeywords(obj.keywords);
